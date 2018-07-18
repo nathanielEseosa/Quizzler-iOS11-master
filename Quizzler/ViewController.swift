@@ -1,0 +1,96 @@
+//
+//  ViewController.swift
+//  Quizzler
+//
+//  Created by Angela Yu on 25/08/2015.
+//  Copyright (c) 2015 London App Brewery. All rights reserved.
+//
+
+import UIKit
+
+class ViewController: UIViewController {
+    
+    let allQuestions = QuestionBank()
+    var pickedAnswer : Bool = false
+    var currentQuestionIndex : Int = 0
+    let maxQuestionArrayLenght : Int = QuestionBank().shuffledArrayOfQuestions.count - 1
+    var score : Int = 0
+    
+    
+    
+    @IBOutlet weak var questionLabel: UILabel!
+    @IBOutlet weak var scoreLabel: UILabel!
+    @IBOutlet var progressBar: UIView!
+    @IBOutlet weak var progressLabel: UILabel!
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        nextQuestion()
+        
+    }
+
+
+    @IBAction func answerPressed(_ sender: AnyObject) {
+        if sender.tag == 1 {
+            pickedAnswer = true
+        } else if sender.tag == 2 {
+            pickedAnswer = false
+        }
+        
+        checkAnswer()
+        currentQuestionIndex += 1
+        nextQuestion()
+        
+    }
+    
+    func updateUI() {
+    
+        scoreLabel.text = "Score: \(score)"
+        progressLabel.text = "\(currentQuestionIndex + 1)/\(maxQuestionArrayLenght + 1)"
+        //Progress bar = (maximum screen width(375) / maximum quiz questions(13)) * current quiz questions amount(1 to 13)
+        progressBar.frame.size.width = (view.frame.size.width / CGFloat(maxQuestionArrayLenght + 1)) * CGFloat(currentQuestionIndex + 1)
+    }
+
+    func nextQuestion() {
+        
+        if currentQuestionIndex <= maxQuestionArrayLenght {
+            questionLabel.text = allQuestions.shuffledArrayOfQuestions[currentQuestionIndex].questionText
+            updateUI()
+        } else {
+            
+            let alert = UIAlertController(title: "Awesome", message: "You finished answering all the question. Do you want to restart the quiz?", preferredStyle: .alert)
+            
+            let restartAction = UIAlertAction(title: "Restart", style: .default) { (UIAlertAction) in
+                // https://www.udemy.com/ios-11-app-development-bootcamp/learn/v4/t/lecture/7555984?start=0
+                self.startOver()
+            }
+            
+            alert.addAction(restartAction)
+            
+            present(alert, animated: true, completion: nil)
+        }
+    }
+    
+    
+    func checkAnswer() {
+        
+        let correctAnswer = allQuestions.shuffledArrayOfQuestions[currentQuestionIndex].correctAnswer
+        
+        if pickedAnswer == correctAnswer {
+            // An imported third party Objective-C code that enables Head-Up Display pop-ups
+            // https://www.udemy.com/ios-11-app-development-bootcamp/learn/v4/t/lecture/7555990?start=0
+            ProgressHUD.showSuccess("Correct!")
+            score += 10
+        } else {
+            ProgressHUD.showError("Wrong!")
+        }
+    }
+    
+    
+    func startOver() {
+        currentQuestionIndex = 0
+        score = 0
+        nextQuestion()
+    }
+    
+}
